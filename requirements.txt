@@ -1,0 +1,17 @@
+# Core Dependencies
+streamlit==1.41.1          # Web application framework
+pandas==2.2.2              # Data manipulation and analysis
+sqlalchemy==2.0.39         # Database toolkit and ORM
+pymysql==1.1.1             # MySQL database connector
+
+# Google Generative AI
+google-generativeai== 0.8.5 # Gemini API integration
+google-genai == 1.13.0
+
+# Visualization Libraries
+matplotlib==3.9.0          # Plotting and visualization
+seaborn==0.13.2            # Statistical data visualization
+plotly==5.24.0             # Interactive visualizations
+
+# Database Utilities
+mysql-connector-python==9.3.0  # MySQL driver
