@@ -1,3 +1,6 @@
 # RETAIL-INSIGHTS-GENERATOR-SQL-Visualization-Assistant
-[Retail Insights Dashboard/Table show](images/screenshot1.png)
-[Retail Insights Dashboard/ visualizaion](images/screenshot2.png)
+### App Screenshot 1
+![Screenshot 1](images/screenshot1.png)
+
+### App Screenshot 2
+![Screenshot 2](images/screenshot2.png)
