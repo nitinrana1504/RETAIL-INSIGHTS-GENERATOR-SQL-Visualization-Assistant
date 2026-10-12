@@ -19,9 +19,10 @@ Do not redefine or create `df`. Do not define functions or print anything. No pl
 
 def patch_heatmap_code(code: str) -> str:
     """
-    Automatically patch heatmap code that uses fmt='d' to avoid float formatting errors.
+    Automatically patch heatmap code that uses format patterns like fmt='d', fmt='g', etc.
+    to avoid float formatting errors.
     """
-    code = re.sub(r"fmt\s*=\s*['\"]d['\"]", "fmt='.0f'", code)
+    code = re.sub(r"fmt\s*=\s*['\"][dg\.\d]+[a-zA-Z]*['\"]", "fmt='.0f'", code)
 
     return code
 
@@ -30,8 +31,32 @@ def render_visual(df, description):
     code = patch_heatmap_code(code)  
     st.code(code, language="python")
     try:
+        plt.clf() # Ensure a clean slate for the plot
+
+        # Define a restricted environment
+        restricted_globals = {
+            "__builtins__": {
+                "print": print,
+                "len": len,
+                "range": range,
+                "int": int,
+                "float": float,
+                "str": str,
+                "list": list,
+                "dict": dict,
+                "set": set,
+                "tuple": tuple,
+                "abs": abs,
+                "min": min,
+                "max": max,
+                "sum": sum,
+                "bool": bool,
+                "enumerate": enumerate,
+                "zip": zip,
+            }
+        }
         local_vars = {"df": df.copy(), "plt": plt, "sns": sns, "pd": pd}
-        exec(code, {}, local_vars)
+        exec(code, restricted_globals, local_vars)
         st.pyplot(plt)
     except Exception as e:
         st.error(f"Visualization error: {e}")

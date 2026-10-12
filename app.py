@@ -15,13 +15,16 @@ if st.button("Run") and question.strip():
     st.subheader("Generated SQL")
     st.code(sql, language="sql")
 
-    df = execute_query(sql)
-    if isinstance(df, str):
-        st.error(df)
-    elif df is not None and not df.empty:
-        if mode == "Show Table":
-            st.dataframe(df)
+    try:
+        df = execute_query(sql)
+        if isinstance(df, str):
+            st.error(df)
+        elif df is not None and not df.empty:
+            if mode == "Show Table":
+                st.dataframe(df)
+            else:
+                render_visual(df, question)
         else:
-            render_visual(df, question)
-    else:
-        st.warning("No results returned.")
+            st.warning("No results returned.")
+    except Exception as e:
+        st.error(f"An unexpected error occurred while executing the query: {e}")

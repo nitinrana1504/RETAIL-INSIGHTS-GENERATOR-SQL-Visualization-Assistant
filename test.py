@@ -1,18 +1,20 @@
+import os
 import google.generativeai as genai
 from sqlalchemy import create_engine, text
 import matplotlib.pyplot as plt
 import pandas as pd
 import seaborn as sns
 
-GENAI_KEY = "AIzaSyAOyyO_OBroxP88BS5SpZJbauLdGuy1OTs"
+GENAI_KEY = os.getenv("GENAI_KEY", "your_gemini_api_key")
 genai.configure(api_key=GENAI_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-MYSQL_USER = "root"
-MYSQL_PASSWORD = "1234"
-MYSQL_HOST = "localhost:3306"
-MYSQL_DATABASE = "atliq_tshirts"
-DATABASE_URL = f"mysql+mysqlconnector://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}/{MYSQL_DATABASE}"
+MYSQL_USER = os.getenv("MYSQL_USER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "1234")
+MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "Darkness")
+DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
 
 def get_data_from_mysql(query):
     try:
@@ -55,10 +57,36 @@ def visualize_data(code, df):
     """
     try:
         # Sanitize code block if it includes markdown formatting
+        import re
         code = code.strip()
-        if code.startswith("```"):
-            code = "\n".join(line for line in code.splitlines() if not line.strip().startswith("```"))
+        match = re.search(r"```(?:[a-zA-Z]*)\n(.*?)```", code, re.DOTALL)
+        if match:
+            code = match.group(1).strip()
 
+        plt.clf() # Ensure a clean slate for the plot
+
+        # Define a restricted environment
+        restricted_globals = {
+            "__builtins__": {
+                "print": print,
+                "len": len,
+                "range": range,
+                "int": int,
+                "float": float,
+                "str": str,
+                "list": list,
+                "dict": dict,
+                "set": set,
+                "tuple": tuple,
+                "abs": abs,
+                "min": min,
+                "max": max,
+                "sum": sum,
+                "bool": bool,
+                "enumerate": enumerate,
+                "zip": zip,
+            }
+        }
         local_namespace = {
             "df": df,
             "plt": plt,
@@ -66,7 +94,7 @@ def visualize_data(code, df):
             "sns": sns,
         }
 
-        exec(code, {}, local_namespace)
+        exec(code, restricted_globals, local_namespace)
         plt.show()
 
     except Exception as e:
@@ -110,11 +138,12 @@ def generate_sql_from_description(data_description):
         response = model.generate_content(prompt)
         raw_sql = response.text.strip() if response.text else ""
 
-        clean_sql = "\n".join(
-            line for line in raw_sql.splitlines() if not line.strip().startswith("```")
-        )
+        import re
+        match = re.search(r"```(?:[a-zA-Z]*)\n(.*?)```", raw_sql, re.DOTALL)
+        if match:
+            return match.group(1).strip()
 
-        return clean_sql.strip()
+        return raw_sql.strip()
     except Exception as e:
         print(f"Error generating SQL: {e}")
         return None

@@ -1,14 +1,15 @@
+import os
 import google.generativeai as genai
 
-GENAI_KEY = "your_gemini_api_key"
+GENAI_KEY = os.getenv("GENAI_KEY", "your_gemini_api_key")
 genai.configure(api_key=GENAI_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-MYSQL_USER = "root"
-MYSQL_PASSWORD = "1234"
-MYSQL_HOST = "localhost"
-MYSQL_PORT = "3306"
-MYSQL_DATABASE = "Darkness"
+MYSQL_USER = os.getenv("MYSQL_USER", "root")
+MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "1234")
+MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
+MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "Darkness")
 DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
 
 few_shots = [
