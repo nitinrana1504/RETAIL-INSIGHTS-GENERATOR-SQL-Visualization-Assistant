@@ -75,6 +75,11 @@ def validate_viz_ast(code: str) -> None:
         "exec", "eval", "open", "compile", "__import__", "globals", "locals",
         "vars", "getattr", "setattr", "delattr", "breakpoint", "input",
     }
+    forbidden_methods = {
+        "to_csv", "to_excel", "to_pickle", "to_json", "to_sql", "to_parquet",
+        "to_feather", "to_hdf", "to_clipboard", "read_csv", "read_pickle",
+        "read_html", "read_json", "read_sql", "savefig", "connect", "urlopen",
+    }
     for node in ast.walk(tree):
         if isinstance(node, (ast.Import, ast.ImportFrom)):
             if isinstance(node, ast.Import):
@@ -90,6 +95,9 @@ def validate_viz_ast(code: str) -> None:
         elif isinstance(node, ast.Call) and isinstance(node.func, ast.Name):
             if node.func.id in forbidden_names:
                 raise ValueError(f"Forbidden function call: {node.func.id}")
+        elif isinstance(node, ast.Call) and isinstance(node.func, ast.Attribute):
+            if node.func.attr in forbidden_methods:
+                raise ValueError(f"Forbidden method call: {node.func.attr}")
         elif isinstance(node, ast.Name):
             if node.id.startswith("__") or node.id in forbidden_names:
                 raise ValueError(f"Forbidden name: {node.id}")
