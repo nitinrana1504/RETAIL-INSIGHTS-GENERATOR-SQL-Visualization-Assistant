@@ -1,16 +1,34 @@
 import os
 import google.generativeai as genai
+from sqlalchemy.engine import URL
 
-GENAI_KEY = os.getenv("GENAI_KEY", "your_gemini_api_key")
+GENAI_KEY = os.getenv("GENAI_KEY") or os.getenv("GEMINI_API_KEY")
+if not GENAI_KEY:
+    raise RuntimeError(
+        "Set GENAI_KEY or GEMINI_API_KEY in your environment before starting the app."
+    )
 genai.configure(api_key=GENAI_KEY)
 model = genai.GenerativeModel("gemini-2.0-flash")
 
-MYSQL_USER = os.getenv("MYSQL_USER", "root")
-MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD", "1234")
-MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
-MYSQL_PORT = os.getenv("MYSQL_PORT", "3306")
-MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "Darkness")
-DATABASE_URL = f"mysql+pymysql://{MYSQL_USER}:{MYSQL_PASSWORD}@{MYSQL_HOST}:{MYSQL_PORT}/{MYSQL_DATABASE}"
+DATABASE_URL = os.getenv("DATABASE_URL")
+if not DATABASE_URL:
+    MYSQL_USER = os.getenv("MYSQL_USER")
+    MYSQL_PASSWORD = os.getenv("MYSQL_PASSWORD")
+    if MYSQL_USER is None or MYSQL_PASSWORD is None:
+        raise RuntimeError(
+            "Set DATABASE_URL, or set both MYSQL_USER and MYSQL_PASSWORD in your environment."
+        )
+    MYSQL_HOST = os.getenv("MYSQL_HOST", "localhost")
+    MYSQL_PORT = int(os.getenv("MYSQL_PORT", "3306"))
+    MYSQL_DATABASE = os.getenv("MYSQL_DATABASE", "Darkness")
+    DATABASE_URL = URL.create(
+        "mysql+pymysql",
+        username=MYSQL_USER,
+        password=MYSQL_PASSWORD,
+        host=MYSQL_HOST,
+        port=MYSQL_PORT,
+        database=MYSQL_DATABASE,
+    ).render_as_string(hide_password=False)
 
 few_shots = [
     {
